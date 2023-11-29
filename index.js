@@ -29,6 +29,28 @@ async function run() {
     const userCollection = database.collection("users");
     const paymentCollection = database.collection("payment");
 
+    // get user role
+    app.get("/api/v1/get-all-user", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { email: userEmail };
+      const result = await userCollection.findOne(query);
+      let role = "";
+      if (result?.role === "admin") {
+        role = "admin";
+      } else if (result?.role === "creator") {
+        role = "creator";
+      } else {
+        role = "user";
+      }
+      res.send({ role });
+    });
+
+    // getalluser
+    app.get("/api/v1/get-all-user", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
     //  Get top participent contest
     app.get("/api/v1/get-top-contests", async (req, res) => {
       const searchText = req.query?.search;
