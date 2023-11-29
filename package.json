@@ -1,7 +1,6 @@
 {
   "name": "contest-bud-server",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -13,6 +12,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2"
-  }
+    "express": "^4.18.2",
+    "mongodb": "^6.3.0",
+    "stripe": "^14.5.0"
+  },
+  "description": ""
 }
