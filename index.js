@@ -29,11 +29,19 @@ async function run() {
     const userCollection = database.collection("users");
     const paymentCollection = database.collection("payment");
 
+    // delete a contest
+    app.delete("/api/v1/delete-contest/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await contestCollection.deleteOne(filter);
+      res.send(result);
+    });
+
     // update user role
     app.patch("/api/v1/update-role/:id", async (req, res) => {
       const id = req.params.id;
       const userRole = req.body;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const updateRole = {
         $set: {
           role: userRole.role,
