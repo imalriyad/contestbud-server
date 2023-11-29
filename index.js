@@ -29,10 +29,25 @@ async function run() {
     const userCollection = database.collection("users");
     const paymentCollection = database.collection("payment");
 
+    //  Get top participent contest
+    app.get("/api/v1/get-top-contests", async (req, res) => {
+      const searchText = req.query?.search;
+      let query = {};
+      if (searchText) {
+        query = { tags: { $regex: new RegExp(searchText, "i") } };
+      }
+      const result = await contestCollection
+        .find(query)
+        .sort({ participants: -1 })
+        .limit(10)
+        .toArray();
+
+      res.send(result);
+    });
+
     // payment intance
     app.post("/api/v1/create-payment-intent", async (req, res) => {
       const { price } = req.body;
-      console.log(price);
       const amount = parseInt(price * 100);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -44,34 +59,34 @@ async function run() {
       });
     });
 
+    // save payment details to db
     app.post("/api/v1/payment", async (req, res) => {
       const payment = req.body;
       const result = await paymentCollection.insertOne(payment);
       res.send(result);
     });
 
+    // update participent feild
     app.patch("/api/v1/participants/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       try {
-        // Find the document in the collection
         const contestDocument = await contestCollection.findOne(filter);
-        
-        // Check if the document exists
+
         if (!contestDocument) {
-          return res.status(404).json({ error: 'Document not found' });
+          return res.status(404).json({ error: "Document not found" });
         }
-    
-        // Increment the participants field by 1
+
         const updatedParticipants = contestDocument.participants + 1;
-    
-        // Update the document in the collection
-        await contestCollection.updateOne(filter, { $set: { participants: updatedParticipants } });
-    
-        res.json({ message: 'Participants field updated successfully' });
+
+        await contestCollection.updateOne(filter, {
+          $set: { participants: updatedParticipants },
+        });
+
+        res.json({ message: "Participants field updated successfully" });
       } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: "Internal Server Error" });
       }
     });
 
