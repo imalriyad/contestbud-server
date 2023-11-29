@@ -29,8 +29,22 @@ async function run() {
     const userCollection = database.collection("users");
     const paymentCollection = database.collection("payment");
 
+    // update user role
+    app.patch("/api/v1/update-role/:id", async (req, res) => {
+      const id = req.params.id;
+      const userRole = req.body;
+      const query = { _id: new ObjectId(id)};
+      const updateRole = {
+        $set: {
+          role: userRole.role,
+        },
+      };
+      const result = await userCollection.updateOne(query, updateRole);
+      res.send(result);
+    });
+
     // get user role
-    app.get("/api/v1/get-all-user", async (req, res) => {
+    app.get("/api/v1/get-user-role", async (req, res) => {
       const userEmail = req.query.email;
       const query = { email: userEmail };
       const result = await userCollection.findOne(query);
