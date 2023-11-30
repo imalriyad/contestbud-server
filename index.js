@@ -25,9 +25,17 @@ async function run() {
     await client.connect();
 
     const database = client.db("contestbud");
-    const contestCollection = database.collection("contest");
+    const contestCollection = database.collection("testContest");
     const userCollection = database.collection("users");
     const paymentCollection = database.collection("payment");
+
+    //  Add new Contest
+    app.post("/api/v1/create-contest", async (req, res) => {
+      const newContest = req.body;
+      console.log(newContest);
+      const result = await contestCollection.insertOne(newContest);
+      res.send(result);
+    });
 
     // delete a contest
     app.delete("/api/v1/delete-contest/:id", async (req, res) => {
@@ -37,6 +45,19 @@ async function run() {
       res.send(result);
     });
 
+    // update ucontest status
+    app.patch("/api/v1/update-contest-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const contestStatus = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateStatus = {
+        $set: {
+          status: contestStatus.status,
+        },
+      };
+      const result = await contestCollection.updateOne(query, updateStatus);
+      res.send(result);
+    });
     // update user role
     app.patch("/api/v1/update-role/:id", async (req, res) => {
       const id = req.params.id;
@@ -110,6 +131,14 @@ async function run() {
       res.send(result);
     });
 
+    // get paid contest
+    app.get("/api/v1/get-paid-contest/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await paymentCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     // update participent feild
     app.patch("/api/v1/participants/:id", async (req, res) => {
       const id = req.params.id;
@@ -146,6 +175,17 @@ async function run() {
       res.send(result);
     });
 
+    // Get Creator my-created-contest as  a creator
+    app.get("/api/v1/get-my-created-contest", async (req, res) => {
+      const email = req.query.email;
+      let query = {};
+      if (email) {
+        query = { creatorMail: email };
+      }
+      const result = await contestCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get all contest by id
     app.get("/api/v1/get-all-contest/:id", async (req, res) => {
       const id = req.params.id;
@@ -155,6 +195,13 @@ async function run() {
     });
     // get all contest
     app.get("/api/v1/get-all-contest", async (req, res) => {
+      const result = await contestCollection
+        .find({ status: { $ne: "pending" } })
+        .toArray();
+      res.send(result);
+    });
+    // get all contest as an admin
+    app.get("/api/v1/get-all-contest-admin", async (req, res) => {
       const result = await contestCollection.find().toArray();
       res.send(result);
     });
